@@ -1,18 +1,15 @@
+import time
 from urllib.request import urlopen
-from bs4 import BeautifulSoup
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import time
-
-# import selenium.common.exceptions as exceptions
-from selenium.webdriver.support.ui import WebDriverWait
-
-from selenium.webdriver.support.ui import Select
-
-
-# from selenium.webdriver.support.expected_conditions import visibility_of_element_located
-from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
+
+chrome_options = Options()
 
 
 def userCountry():
@@ -32,8 +29,8 @@ def getCities():
     soup.prettify()
 
     # testing to see if data can be accessed in url above
-    for info in soup.find("div", class_="properties-count"):
-        print(info.text)
+    # for info in soup.find("div", class_="properties-count"):
+    # print(info.text)
 
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
@@ -41,25 +38,14 @@ def getCities():
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("detach", True)
     options.add_experimental_option("useAutomationExtension", False)
+    service = Service("C:/Users/viminnanavati/chromedriver.exe")
 
     browser = webdriver.Chrome(
-        chrome_options=options,
-        executable_path=r"C:/Users/viminnanavati/chromedriver.exe",
+        options=options,
+        service=service,
     )
-
     browser.get(url)
     time.sleep(4)
-
-    # selectFind = Select(browser.find_element(By.TAG_NAME, "select"))
-    # selectFind.select_by_value("hostel")
-    # time.sleep(2)
-
-    # selectHousing = Select(
-    #     browser.find_element(
-    #         By.XPATH,
-    #         "//div[@class='find-in-country']/div[@class='selection-container'][1]",
-    #     )
-    # )
 
     selectHousing = Select(
         WebDriverWait(browser, 10).until(
@@ -96,22 +82,12 @@ def getCities():
     for result in results:
         city = result.text
         city_list.append(city)
-    print(city_list)
+    # print(city_list)
+    print(*city_list, sep="\n")
     # for result in results:
     #     print(result.text)
 
     time.sleep(10)
-
-    # WebDriverWait(browser, 10)
-    # browser.implicitly_wait(20)
-
-    # cities = browser.find_element(
-    #     By.XPATH,
-    #     "//div[@class='find-in-country']/div[@class='selection-container'][3]",
-    # )
-
-    # for option in cities.options:
-    #     print(option.text)
 
     browser.quit()
 
