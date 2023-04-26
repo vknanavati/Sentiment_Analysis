@@ -1,12 +1,15 @@
 import time
+import re
 from urllib.request import urlopen
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.support.ui import WebDriverWait
+
+# from selenium.webdriver.support.ui import Select
+# from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support import expected_conditions as EC
+
+# from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
 chrome_options = Options()
@@ -14,132 +17,65 @@ chrome_options = Options()
 # Test case: London, England EUROPE
 
 
-def user_country():
-    user_input = input("Enter country: ")
-    return user_input
+url = "https://www.hostelworld.com/st/hostels/europe/england/london/"
+html = urlopen(url)
+
+soup = BeautifulSoup(html, "html.parser")
+soup.prettify()
 
 
-country = user_country()
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")
+options.add_argument("start-maximized")
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option("detach", True)
+options.add_experimental_option("useAutomationExtension", False)
+service = Service("C:/Users/viminnanavati/chromedriver.exe")
 
-city_list = []
+browser = webdriver.Chrome(
+    options=options,
+    service=service,
+)
+browser.get(url)
+time.sleep(4)
 
+url_list = []
 
-def get_cities():
-    # accesses main hostel page for user country
-    url = f"https://www.hostelworld.com/st/hostels/europe/{country}/"
-    html = urlopen(url)
+results = browser.find_element(
+    By.XPATH,
+    "//main/div[4]/section",
+)
 
-    soup = BeautifulSoup(html, "html.parser")
-    soup.prettify()
+raw_string = results.get_attribute("innerText").replace("\n", "")
+digit_string = re.sub("[^0-9]", "", raw_string)
+digit_list = [int(page) for page in digit_string]
+print(digit_list)
 
-    # testing to see if data can be accessed in url above
-    # for info in soup.find("div", class_="properties-count"):
-    # print(info.text)
-
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("start-maximized")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("detach", True)
-    options.add_experimental_option("useAutomationExtension", False)
-    service = Service("C:/Users/viminnanavati/chromedriver.exe")
-
-    browser = webdriver.Chrome(
-        options=options,
-        service=service,
-    )
-    browser.get(url)
-    time.sleep(4)
-
-    select_housing = Select(
-        WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable(
-                (
-                    By.XPATH,
-                    "//select[@title='Find']",
-                )
-            )
-        )
-    )
-    select_housing.select_by_index(0)
-
-    select_location = Select(
-        WebDriverWait(browser, 20).until(
-            EC.element_to_be_clickable(
-                (
-                    By.XPATH,
-                    "//select[@title='in']",
-                )
-            )
-        )
-    )
-
-    select_location.select_by_index(1)
-    time.sleep(20)
-
-    results = browser.find_elements(
-        By.XPATH,
-        "//div[@class='find-in-country']/div[@class='selection-container'][3]/label/select/option[position()>1]",
-    )
-    for result in results:
-        city = result.text
-        city_list.append(city)
-    # print(city_list)
-    print(*city_list, sep="\n")
-    # for result in results:
-    #     print(result.text)
-
-    time.sleep(10)
-
-    browser.quit()
-
-    print("\ncountry hostel worked\n")
+# print(list())
+# print(results.get_attribute("innerText").replace('\n', ''))
 
 
-# city_list = *city_list, sep="\n"
-def choose_city():
+time.sleep(10)
 
-    print(f"\nChoose a city:{city_list}")
+browser.quit()
 
-    user_input = input("\nEnter city name: ")
-
-    url = f"https://www.hostelworld.com/st/hostels/europe/england/{user_input}/"
-    html = urlopen(url)
-
-    soup = BeautifulSoup(html, "html.parser")
-    soup.prettify()
-
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("start-maximized")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("detach", True)
-    options.add_experimental_option("useAutomationExtension", False)
-    service = Service("C:/Users/viminnanavati/chromedriver.exe")
-
-    browser = webdriver.Chrome(
-        options=options,
-        service=service,
-    )
-    browser.get(url)
-    time.sleep(4)
-
-    # url_list = []
-
-    results = browser.find_element(
-        By.XPATH,
-        "//main/div[4]/div[30]section/div/div[@class='pagination-item pagination-current']",
-    )
-
-    print(results)
-
-    time.sleep(10)
-
-    browser.quit()
-
-
-get_cities()
-choose_city()
 
 # https://www.hostelworld.com/st/hostels/north-america/mexico/mexico-city/
 # https://www.hostelworld.com/st/hostels/north-america/mexico/mexico-city/p/2/
+
+# page_list = []
+# for character in results:
+#     if (character.get_attribute("innerText") != "null"):
+#         page_list.append(character.get_attribute("innerText"))
+# print(page_list)
+
+# for number in results:
+#     page = number.text.strip()
+#     page_list.append(page)
+
+# print(*page_list)
+# re.sub("[^0-9]", ", ", )
+
+# page_list = *page_list, sep="\n"
+# print(page_list)
+# print(*page_list, sep="\n")
