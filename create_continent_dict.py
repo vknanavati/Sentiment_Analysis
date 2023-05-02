@@ -1,4 +1,5 @@
 import time
+import json
 from urllib.request import urlopen
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -45,7 +46,7 @@ for result in results:
 print(f"\nContinent list: {continent_list}\n")
 # Continent list: ['Europe', 'Asia', 'North America', 'South America', 'Oceania', 'Africa']
 
-# time.sleep(3)
+time.sleep(3)
 ###################################
 
 ###################################
@@ -57,7 +58,7 @@ for continent in continent_class:
     time.sleep(3)
     group_countries = [country.text.strip() for country in continent]
     country_list.append(group_countries)
-print(f"\nCountry List: {country_list}\n")
+print(f"\nCOUNTRY LIST: {country_list}\n")
 
 time.sleep(10)
 browser.quit()
@@ -70,6 +71,9 @@ complete_dict = dict(joint_list)
 
 print(f"\nCOMPLETE DICT:{complete_dict}\n")
 
+
+with open("continent_dict.json", "w", encoding="UTF-8") as dict_cont:
+    json.dump(complete_dict, dict_cont)
 #########OUTPUT##########
 # Continent list: ['Europe', 'Asia', 'North America', 'South America', 'Oceania', 'Africa']
 
