@@ -1,6 +1,7 @@
 import time
 import json
 import re
+import pandas as pd
 from random import randint
 from time import sleep
 from urllib.request import urlopen
@@ -22,7 +23,7 @@ chrome_options = Options()
 # print(info.text)
 
 options = webdriver.ChromeOptions()
-# options.add_argument("--headless")
+options.add_argument("--headless")
 options.add_argument("start-maximized")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("detach", True)
@@ -94,7 +95,7 @@ def get_cities():
     select_housing.select_by_index(0)
 
     select_location = Select(
-        WebDriverWait(browser, 20).until(
+        WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable(
                 (
                     By.XPATH,
@@ -105,7 +106,7 @@ def get_cities():
     )
 
     select_location.select_by_index(1)
-    time.sleep(20)
+    time.sleep(10)
 
     results = browser.find_elements(
         By.XPATH,
@@ -118,9 +119,9 @@ def get_cities():
     print(f"\nList of cities: {city_list}\n")
     # print(*city_list, sep="\n")
 
-    time.sleep(10)
+    # time.sleep(5)
 
-    browser.quit()
+    # browser.quit()
 
 
 get_cities()
@@ -164,7 +165,7 @@ def choose_city():
     city_choice = int(input("\nEnter city by digit: "))
 
     if city_choice in dictionary_cities:
-        print("YAAAAASSS")
+        print("\nYAAAAASSS\n")
         city_value = dictionary_cities[city_choice]
         return city_value
 
@@ -178,10 +179,12 @@ city = choose_city()
 # next def should scan country page for pagination of hostel lists
 def city_page():
     url = f"https://www.hostelworld.com/st/hostels/{continent}/{country}/{city}/"
-    page = requests.get(url, timeout=10)
-    soup = BeautifulSoup(page.content, "html.parser")
-
+    # replaces any white space with %20
+    url = url.replace(" ", "%20")
+    print(url)
     html = urlopen(url)
+    # page = requests.get(url, timeout=10)
+    # soup = BeautifulSoup(page.content, "html.parser")
 
     soup = BeautifulSoup(html, "html.parser")
     soup.prettify()
@@ -190,9 +193,7 @@ def city_page():
     time.sleep(4)
 
     # def pagination_count():
-    if soup.find("section") is not None:
-        print("This city has only one page worth of hostels.")
-    else:
+    if soup.find("section", {"name": "pagination"}) is not None:
         print("\nDetected for pagination.\n")
 
         time.sleep(8)
@@ -200,7 +201,6 @@ def city_page():
             By.XPATH,
             "//main/div[4]/section",
         )
-
         raw_string = results.get_attribute("innerText").replace("\n", "")
         digit_string = re.sub("[^0-9]", "", raw_string)
         # digit_list = number of pages ex. London has 4 pages worth of hostels
@@ -208,10 +208,10 @@ def city_page():
         digit_list = [int(page) for page in digit_string]
 
         print("\nDetermined number of pages.\n")
+        print(f"\ndigit_list is: {digit_list}\n")
 
         time.sleep(5)
 
-        browser.quit()
         # url_list initially creates template hostel link for each element in digit list
 
         url_list = [url for count in enumerate(digit_list)]
@@ -225,6 +225,11 @@ def city_page():
             url_list[index] = url_list[index] + "/p/" + str(i) + "/"
 
         print(f"Paginated url list: {url_list}")
+        return url_list
+    else:
+        print("\nThis city has only one page worth of hostels.\n")
+        url_list = [url]
+        print(f"Single url link: {url}")
         return url_list
 
 
@@ -246,7 +251,8 @@ def links_cityhostels():
             for result in results:
                 link_url = result["href"]
                 links_list.append(link_url)
-    # print(f"\nList of links: {links_list}\n")
+        # print(f"\nList of links: {links_list}\n")
+        browser.quit()
 
     url_count = len(links_list)
     print(f"\nlinks_list = {links_list}\n")
@@ -303,9 +309,12 @@ def city_hostel_dict():
 
     print(f"\nComplete Dictionary: {ratings_dict}\n")
     print(f"Unrated hostels: {no_rating_string}")
+    return ratings_dict
 
 
-# df = pd.DataFrame(ratings_dict)
-# # print(df)
-# df.to_csv("Hostel.csv")
-# print("\nCSV created! YAY!!\n")
+city_ratings_dict = city_hostel_dict()
+
+df = pd.DataFrame(city_ratings_dict)
+# print(df)
+df.to_csv("Hostel_City_Ratings.csv")
+print("\nCSV created! YAY!!\n")
